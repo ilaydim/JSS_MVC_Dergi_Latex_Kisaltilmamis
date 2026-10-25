@@ -1,0 +1,18 @@
+\section{Future Work}
+\label{sec:future}
+
+Although the \textit{MVC Test Orchestrator} has demonstrated that selected MVC conformance violations can be autonomously detected and repaired in LLM-supported software engineering, this research outlines several trajectories for subsequent investigation. Our future research will primarily focus on the following dimensions:
+
+\begin{itemize}
+    \item \textbf{Generalization of Architectural Patterns:} While the current framework is optimized for the MVC pattern, future iterations will be expanded to autonomously recognize and validate diverse architectural styles, including microservices, event-driven architectures, and n-tier systems.
+    
+    \item \textbf{Polyglot Static Analysis:} To enhance interoperability across heterogeneous technology stacks, the system's current Python-based AST analysis engine will be extended with static analysis capabilities for languages such as Java, C\#, and JavaScript.
+    
+    \item \textbf{Industrial Scaling and Robustness:} The evaluation dataset will be expanded beyond 20 SRS documents to include complex, high-stakes requirement sets from diverse industrial sectors such as finance, healthcare, and automotive systems. This will facilitate a more rigorous stress-testing of the system's ``Zero-Inference'' policy.
+    
+    \item \textbf{Inference Optimization and Small Language Models (SLMs):} Given the computational overhead of state-of-the-art LLMs, future work will explore the fine-tuning of parameter-efficient Small Language Models (e.g., 7B-8B parameter ranges) specifically for architectural remediation, with the goal of enabling local, privacy-preserving deployments that approach the 92.6\% macro-average remediation success rate (RSDA) reported in this study.
+    
+    \item \textbf{CI/CD Pipeline Integration:} To transition the framework from a standalone scaffolding tool into a proactive architectural management assistant, future iterations will embed the \textit{MVC Test Orchestrator} directly into Continuous Integration/Continuous Deployment (CI/CD) pipelines. This will enable real-time interception and autonomous remediation of architectural violations as they are introduced during ``vibe coding''-style development, at the point of the pull request.
+\end{itemize}
+
+These enhancements aim to evolve the framework toward broader, real-time architectural governance capabilities spanning additional phases of the software development lifecycle (SDLC).

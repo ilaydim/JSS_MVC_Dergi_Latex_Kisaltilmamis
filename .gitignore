@@ -1,0 +1,41 @@
+# LaTeX temporary files
+*.aux
+*.bbl
+*.blg
+*.fls
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.auxlock
+
+# Generated PDFs
+*.pdf
+!images/*.pdf
+
+# Backup files
+*.bak
+*~
+*.swp
+*.swo
+*.swn
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# IDE
+.idea/
+*.iml
+
+# OS specific
+Thumbs.db

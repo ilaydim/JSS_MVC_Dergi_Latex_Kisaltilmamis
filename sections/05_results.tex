@@ -1,0 +1,202 @@
+\section{Results}
+\label{sec:results}
+
+Following the experimental design and evaluation metrics described in Section~\ref{sec:experiment}, this section presents the results of evaluating the \textit{MVC Test Orchestrator} on 20 SRS documents. The system's performance was assessed at each stage of the pipeline, requirement extraction, architectural design, file scaffolding, and code generation, using both expert software engineering evaluations and rule-based automated checks. The results show that the system can separate Model, View, and Controller components from unstructured natural language input across documents of varying complexity and domain.
+
+\subsection{Pipeline Performance Breakdown}
+
+This subsection analyzes the operational effectiveness of the system, tracing the data transformation from raw requirement ingestion to the final, self-healed codebase. To evaluate end-to-end performance systematically, the output of each pipeline stage is examined solely in the context of its corresponding Research Question (RQ) and metric. The aggregated framework mapping for the entire pipeline is summarized in Table~\ref{tab:end_to_end_performance}.
+
+% --- RESULTS BREAKDOWN TABLE ---
+\begin{table}[htbp]
+\centering
+\caption{End-to-end performance breakdown of the system aligned with the core Research Questions. Metric definitions and RQ interpretations are given in Section~\ref{sec:experiment}; see also Table~\ref{tab:metric_rq_mapping}.}
+\label{tab:end_to_end_performance}
+\renewcommand{\arraystretch}{1.3} 
+\begin{tabularx}{\textwidth}{@{} l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X c @{}}
+\toprule
+\textbf{Target RQ} & \textbf{Data Transformation (Input $\rightarrow$ Output)} & \textbf{Evaluated Metric} & \textbf{Rate (\%)} \\
+\midrule
+\textbf{RQ1} (Extraction)  & Raw SRS $\rightarrow$ \texttt{requirements\_analysis.json}$^\dagger$          & Semantic Consistency (BERTScore) & 80.8 \\
+\textbf{RQ1} (Extraction)  & \texttt{requirements\_analysis.json}$^\dagger$ $\rightarrow$ \texttt{architecture\_map.json}$^\dagger$ & Component Extraction (ACES, Eq.~\ref{eq:accuracy_score})      & 74.0 \\
+\textbf{RQ2} (Compliance)  & \texttt{architecture\_map.json}$^\dagger$ $\rightarrow$ Directory Structure & Scaffolder Error Rate (SER*,  Eq.~\ref{eq:ser}) & 0.0 \\
+\textbf{RQ2} (Compliance)  & Codebase $\rightarrow$ \texttt{violations.json}$^\dagger$          & Violation Detection Recall (VDR, Eq.~\ref{eq:vdr})        & 98.8 \\
+\textbf{RQ2} (Compliance)  & Codebase $\rightarrow$ \texttt{violations.json}$^\dagger$          & Alert Confirmation Precision (ACP, Eq.~\ref{eq:acp})        & 96.2 \\
+\textbf{RQ3} (Remediation) & \texttt{violations.json}$^\dagger$ $\rightarrow$ Refactored Code   & Repair Success among Detected Alerts (RSDA, Eq.~\ref{eq:rsda})        & 92.6 \\
+\textbf{RQ4} (Validation)  & Expert Rubric Scores $\rightarrow$ Inter-Rater Reliability      & Human-AI Agreement (ICC(A,5))        & 94.2$^\ddagger$ \\
+\textbf{RQ5} (Consistency) & Multiple Iterations $\rightarrow$ Variance Analysis      & Consistency Score (CS, Eq.~\ref{eq:cs})           & 70.6 \\
+\bottomrule
+\multicolumn{4}{@{}l}{\small \textit{*Note: As SER represents an error rate, a lower value denotes higher architectural compliance.}} \\
+\multicolumn{4}{@{}l}{\small $^\dagger$\textit{See Table~\ref{tab:artifact_flow} for artifact contents, generation phase, and downstream consumer.}} \\
+\multicolumn{4}{@{}l}{\small $^\ddagger$\textit{ICC(A,5) coefficient (0.942) $\times$ 100 for tabular consistency; see Section~\ref{sec:discussion_rq4} for the underlying coefficient and 95\% CI.}} \\
+\end{tabularx}
+\end{table}
+
+Table~\ref{tab:descriptive_stats} reports descriptive statistics for each evaluation metric across the 20 SRS documents. These summaries characterize between-document variation in this purposive corpus and should not be interpreted as population-generalization intervals.
+
+\begin{table}[htbp]
+\centering
+\caption{Descriptive statistics for each evaluation metric across 20 SRS documents. Mean = macro-average of per-SRS scores; SD = sample standard deviation; 95\% CI = two-sided \textit{t} confidence interval for the mean ($t_{0.975,19} = 2.093$).}
+\label{tab:descriptive_stats}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccc@{}}
+\toprule
+\textbf{Metric} & \textbf{Mean} & \textbf{SD} & \textbf{Median} & \textbf{Min--Max} & \textbf{95\% CI} \\
+\midrule
+BERTScore                        & 0.8075 & 0.0309 & 0.8187 & 0.7410--0.8460 & [0.7931, 0.8220] \\
+ACES (0--5)$^*$                  & 3.6995 & 0.3556 & 3.6850 & 3.0500--4.4000 & [3.5331, 3.8659] \\
+VDR (\%)                         & 98.810 & 2.120  & 100.000 & 95.000--100.000 & [97.818, 99.802] \\
+ACP (\%)                         & 96.160 & 2.010  & 95.200 & 94.400--100.000 & [95.219, 97.101] \\
+RSDA (\%)                        & 92.640 & 4.900  & 95.000 & 84.200--100.000 & [90.347, 94.933] \\
+Overall CS (\%)                  & 70.622 & 10.520 & 72.095 & 53.040--93.330  & [65.698, 75.545] \\
+\quad Model CS (\%)              & 82.058 & 10.335 & 80.000 & 66.660--100.000 & [77.221, 86.895] \\
+\quad View CS (\%)               & 59.656 & 12.305 & 61.250 & 42.850--80.000  & [53.897, 65.415] \\
+\quad Controller CS (\%)         & 72.199 & 12.943 & 75.000 & 50.000--100.000 & [66.142, 78.256] \\
+\bottomrule
+\multicolumn{6}{@{}l}{\small $^*$\textit{ACES summary computed as the mean of the Overall ACES column in Table~\ref{tab:rq1_results}.}} \\
+\multicolumn{6}{@{}l}{\small \textit{All values computed from the per-SRS scores in Tables~\ref{tab:rq1_results}, \ref{tab:execution_results}, and~\ref{tab:consistency_results}.}} \\
+\end{tabular*}
+\end{table}
+
+Across the 20 SRS documents, the macro-average BERTScore was 0.808 (SD\,=\,0.031; 95\% CI 0.793--0.822). Table~\ref{tab:descriptive_stats} reports the corresponding dispersion statistics (SD, median, min--max, 95\% CI) for the violation-detection and repair-success metrics summarized in Table~\ref{tab:end_to_end_performance}. The macro-average Overall Consistency Score was 70.6\% (SD\,=\,10.5; 95\% CI 65.7--75.5). These are descriptive SRS-level summaries for the purposive corpus.
+
+\subsection{RQ1 \& RQ4: Architectural Extraction and Human-AI Agreement}
+
+To directly address \textbf{RQ1}, this section evaluates the system's precision in autonomously extracting structural MVC components from unstructured text. Furthermore, to answer \textbf{RQ4}, the outputs were rated by human experts to measure industrial viability and Human-AI agreement. Each of the five expert reviewers independently scored the Model, View, and Controller components of every SRS document against the rubric in Table~\ref{tab:evaluation_rubric}; the complete disaggregated, per-expert scores for all 20 SRS documents are provided in the project's public repository (see Data Availability). Table~\ref{tab:rq1_results} presents the comprehensive performance metrics for Semantic Consistency and Component Extraction across all 20 SRS documents. 
+
+% --- MAIN RESULTS TABLE ---
+\begin{table}[htbp]
+\centering
+\caption{Performance metrics across 20 SRS documents, demonstrating semantic consistency (BERTScore) and component extraction score (0-5 scale).}
+\label{tab:rq1_results}
+\renewcommand{\arraystretch}{1.1} 
+\begin{tabular}{lccccc}
+\toprule
+\textbf{SRS Number} & \textbf{Semantic Consistency} & \multicolumn{3}{c}{\textbf{Expert Validation (ACES, 0-5)}} & \textbf{Overall} \\
+\cmidrule(lr){3-5}
+& \textbf{BERTScore} & \textbf{Model (MES)} & \textbf{View (VES)} & \textbf{Controller (CES)} & \textbf{ACES} \\
+\midrule
+\textbf{SRS \#1}  & 0.7845 & 4.25 & 4.55 & 4.40 & 4.40 \\
+\textbf{SRS \#2}  & 0.8087 & 2.70 & 3.75 & 2.70 & 3.05 \\
+\textbf{SRS \#3}  & 0.8335 & 2.60 & 4.75 & 4.00 & 3.78 \\
+\textbf{SRS \#4}  & 0.7463 & 2.70 & 3.80 & 3.05 & 3.18 \\
+\textbf{SRS \#5}  & 0.8305 & 2.45 & 4.55 & 3.80 & 3.60 \\
+\textbf{SRS \#6}  & 0.8292 & 2.45 & 4.55 & 4.00 & 3.67 \\
+\textbf{SRS \#7}  & 0.8270 & 2.45 & 4.10 & 3.50 & 3.35 \\
+\textbf{SRS \#8}  & 0.7410 & 2.10 & 4.30 & 4.00 & 3.47 \\
+\textbf{SRS \#9}  & 0.8197 & 2.45 & 4.30 & 4.15 & 3.63 \\
+\textbf{SRS \#10} & 0.8011 & 2.35 & 4.10 & 3.60 & 3.35 \\
+\textbf{SRS \#11} & 0.8050 & 3.25 & 4.75 & 4.85 & 4.28 \\
+\textbf{SRS \#12} & 0.8181 & 2.45 & 5.00 & 3.65 & 3.70 \\
+\textbf{SRS \#13} & 0.7434 & 2.45 & 4.75 & 3.00 & 3.40 \\
+\textbf{SRS \#14} & 0.8193 & 2.70 & 4.75 & 3.80 & 3.75 \\
+\textbf{SRS \#15} & 0.8460 & 2.70 & 3.80 & 3.95 & 3.48 \\
+\textbf{SRS \#16} & 0.8243 & 3.45 & 4.30 & 4.10 & 3.95 \\
+\textbf{SRS \#17} & 0.8246 & 3.15 & 4.30 & 4.60 & 4.02 \\
+\textbf{SRS \#18} & 0.8019 & 3.15 & 4.75 & 3.65 & 3.85 \\
+\textbf{SRS \#19} & 0.8338 & 3.15 & 4.75 & 4.10 & 4.00 \\
+\textbf{SRS \#20} & 0.8127 & 3.45 & 4.30 & 4.50 & 4.08 \\
+\bottomrule
+\multicolumn{6}{@{}l}{\small \textit{Overall is the unweighted mean of the Model (MES), View (VES), and Controller (CES) scores.}} \\
+\end{tabular}
+\end{table}
+
+\paragraph{Semantic Consistency (BERTScore) Analysis} 
+The data presented in Table~\ref{tab:rq1_results} supports the assessment of the system’s semantic extraction pipeline. By employing BERTScore~\citep{zhang2019bertscore}, which is recognized for effectively balancing semantic flexibility with structural strictness~\citep{wang2025sted}, it was observed that the generated values mainly cluster above the 0.80 threshold (averaging 0.808, with SRS \#15 peaking at 0.8460). This high semantic similarity, aligning with established semantic equivalent benchmarks in recent literature~\citep[0.86--0.90]{wang2025sted}, indicates that the RAG-based extraction mechanism synthesizes the functional constraints from the raw text into the \texttt{requirements\_analysis.json} artifact (Table~\ref{tab:artifact_flow}) with strong semantic fidelity under the conditions tested in this study. BERTScore does not establish requirement completeness or the absence of hallucinated components; these constructs would require requirement-level gold annotations.
+
+\paragraph{Expert Validation and Layer Precision (ACES):}
+The layer-specific extraction score reveals significant details in the generative behavior of the system, addressing \textbf{RQ1}. In highly structured cases (e.g., SRS \#1), the extraction performance in the \textbf{Model layer} achieved a score of $4.25/5$, approximately $85.0\%$, demonstrating solid capability in isolating domain entities. Across the broader dataset, the \textbf{View score (VES)} consistently outperformed other layers, frequently scoring above $4.50$. Conversely, the \textbf{Controller score (CES)} exhibits a slightly higher variance. This variance accurately reflects the natural complexity required to synthesize complex business workflows compared to static entity extraction. The enforcement of the ``Zero-Inference'' policy is designed to limit unconstrained component generation, supporting structural alignment under the tested conditions, and contributes to addressing \textbf{RQ1}.
+
+\paragraph{Descriptive Error Pattern (ACES):}
+Across the 20 SRS documents, expert-rated Model adequacy was lower and more variable (mean 2.820/5, SD\,$=$\,0.514) than View adequacy (mean 4.410/5, SD\,$=$\,0.365) and Controller adequacy (mean 3.870/5, SD\,$=$\,0.539). The lowest Model rating occurred for SRS~\#8 (2.10/5), whereas View ratings frequently approached or reached the upper scale limit (e.g., SRS~\#12: 5.00/5). These layer-specific score distributions locate the main area of weakness in entity and attribute extraction; however, the present data do not identify its causal source, as a requirement-level error taxonomy was not collected.
+
+\subsection{RQ2 \& RQ3: Technical Execution and Autonomous Remediation}
+
+While the initial metrics assess the system's abstract design capabilities, the subsequent evaluation addresses its capacity to translate this design into an executable codebase, thoroughly audit it, and autonomously remediate structural deviations. Table~\ref{tab:execution_results} details the performance metrics across these operational domains.
+
+% --- IMPLEMENTATION & REMEDIATION TABLE ---
+\begin{table}[htbp]
+\centering
+\caption{Technical execution and remediation performance addressing compliance and self-healing, measured against the fault-injection ground truth (406 injected violations across 20 SRS documents; TP = true positives, FP = false positives).}
+\label{tab:execution_results}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lccccccccc}
+\toprule
+\textbf{SRS} & \textbf{SER} & \textbf{Injected} & \textbf{TP} & \textbf{FP} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{RSDA} & \textbf{RSR\textsubscript{e2e}} \\
+\textbf{Number} & \textbf{(\%)} & & & & \textbf{(\%)} & \textbf{(\%)} & \textbf{(\%)} & \textbf{(\%)} & \textbf{(\%)} \\
+\midrule
+\textbf{SRS \#1}  & 0 & 21 & 21 & 1 & 95.5 & 100.0 & 97.7 & 95.2 & 95.2 \\
+\textbf{SRS \#2}  & 0 & 24 & 23 & 1 & 95.8 & 95.8 & 95.8 & 87.0 & 83.3 \\
+\textbf{SRS \#3}  & 0 & 17 & 17 & 0 & 100.0 & 100.0 & 100.0 & 94.1 & 94.1 \\
+\textbf{SRS \#4}  & 0 & 21 & 20 & 1 & 95.2 & 95.2 & 95.2 & 95.0 & 90.5 \\
+\textbf{SRS \#5}  & 0 & 20 & 20 & 1 & 95.2 & 100.0 & 97.6 & 95.0 & 95.0 \\
+\textbf{SRS \#6}  & 0 & 20 & 19 & 1 & 95.0 & 95.0 & 95.0 & 84.2 & 80.0 \\
+\textbf{SRS \#7}  & 0 & 18 & 18 & 0 & 100.0 & 100.0 & 100.0 & 100.0 & 100.0 \\
+\textbf{SRS \#8}  & 0 & 20 & 20 & 1 & 95.2 & 100.0 & 97.6 & 85.0 & 85.0 \\
+\textbf{SRS \#9}  & 0 & 21 & 20 & 1 & 95.2 & 95.2 & 95.2 & 90.0 & 85.7 \\
+\textbf{SRS \#10} & 0 & 21 & 21 & 1 & 95.5 & 100.0 & 97.7 & 95.2 & 95.2 \\
+\textbf{SRS \#11} & 0 & 24 & 24 & 0 & 100.0 & 100.0 & 100.0 & 95.8 & 95.8 \\
+\textbf{SRS \#12} & 0 & 17 & 17 & 1 & 94.4 & 100.0 & 97.1 & 88.2 & 88.2 \\
+\textbf{SRS \#13} & 0 & 20 & 20 & 1 & 95.2 & 100.0 & 97.6 & 95.0 & 95.0 \\
+\textbf{SRS \#14} & 0 & 20 & 19 & 1 & 95.0 & 95.0 & 95.0 & 84.2 & 80.0 \\
+\textbf{SRS \#15} & 0 & 18 & 18 & 1 & 94.7 & 100.0 & 97.3 & 94.4 & 94.4 \\
+\textbf{SRS \#16} & 0 & 20 & 20 & 1 & 95.2 & 100.0 & 97.6 & 95.0 & 95.0 \\
+\textbf{SRS \#17} & 0 & 21 & 21 & 0 & 100.0 & 100.0 & 100.0 & 100.0 & 100.0 \\
+\textbf{SRS \#18} & 0 & 17 & 17 & 1 & 94.4 & 100.0 & 97.1 & 88.2 & 88.2 \\
+\textbf{SRS \#19} & 0 & 22 & 22 & 1 & 95.7 & 100.0 & 97.8 & 95.5 & 95.5 \\
+\textbf{SRS \#20} & 0 & 24 & 24 & 1 & 96.0 & 100.0 & 98.0 & 95.8 & 95.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{ Scaffolder Error Rate (SER) [RQ2]:}
+The $0\%$ error rate recorded during the rule-based project scaffolding phase---a scaffold transformation integrity check rather than a measure of generative accuracy (Section~\ref{sec:experiment})---confirms that the template transformation matched its declared architectural input across all 20 SRS documents, consistent with the Safety-Layered Architecture introduced in Section~1. This result addresses \textbf{RQ2} by demonstrating that the system successfully decouples LLM-driven design reasoning from rule-based file system management; it does not, however, establish end-to-end functional correctness or reduced upstream LLM variability.
+
+\paragraph{Violation Detection Recall and Precision [RQ2]:}
+Further addressing \textbf{RQ2}, the system's capacity to preserve the separation of concerns within the generated code was evaluated using a controlled fault-injection protocol (Section~\ref{sec:experiment}). The AST-based static analyzer achieved an average Violation Detection Recall of $98.8\%$ and an Alert Confirmation Precision of $96.2\%$ (F1 $= 97.5\%$) across the fault-injection benchmark, based on 406 injected ground-truth violations (401 true positives, 16 false positives). Across the 20 SRS documents evaluated in this study, these results indicate that hidden structural regressions, such as unauthorized layer leakage between the View and Model components, are detected with consistently high recall and precision, with only a small number of false alarms raised on unmodified, clean code regions. Unless otherwise noted, reported rates are macro-averages (the simple mean across the 20 SRS documents); as a robustness check, the corresponding micro-averages---computed by pooling counts across all documents (TP $=401$, FP $=16$, Injected $=406$)---are consistent with the macro figures at Recall $=98.77\%$ and Precision $=96.16\%$ (F1 $=97.45\%$).
+
+\paragraph{Remediation Effectiveness (RSDA / RSR\textsubscript{e2e}) [RQ3]:}
+The system's autonomous self-healing capacity is evidenced by its ability to successfully remediate a macro-average of $92.6\%$ of detected violations (RSDA); considering the full set of injected ground-truth violations, including those missed at detection, the end-to-end repair success rate (RSR\textsubscript{e2e}) was $91.6\%$. The corresponding micro-averages (pooled Repair-Attempted $=401$, Repair-Successful $=372$) are RSDA $=92.77\%$ and RSR\textsubscript{e2e} $=91.63\%$, closely matching the macro figures. The effectiveness of the \texttt{/fix} mechanism lies in its defined operational constraints; during the refactoring process, the \textit{Fixer Agent} is computationally bound by the \textit{Architectural Map}. This architectural confinement is designed to prevent the agent from introducing novel architectural drift while a specific logic error is patched, thus directly addressing the objectives of \textbf{RQ3}.
+
+\subsection{RQ5: System Reliability and Stochastic Consistency}
+
+To address the built-in stochastic variability of Large Language Models, a multi-iteration consistency analysis was conducted. This analysis directly answers \textbf{RQ5} (Consistency \& Reliability) by measuring the systemic variance when processing identical inputs. For each of the 20 SRS documents, the system executed the architectural extraction phase three independent times, utilizing identical source documents, prompts, and model hyperparameters. The resulting Consistency Scores (CS) across the MVC layers are presented in Table~\ref{tab:consistency_results}.
+
+% --- CONSISTENCY RESULTS TABLE ---
+\begin{table}[htbp]
+\centering
+\caption{System consistency and variance analysis (CS) across three independent iterations for each SRS document.}
+\label{tab:consistency_results}
+\renewcommand{\arraystretch}{1.1} 
+\begin{tabular}{lcccc}
+\toprule
+\textbf{SRS Number} & \textbf{Model (CS-M \%)} & \textbf{View (CS-V \%)} & \textbf{Controller (CS-C \%)} & \textbf{Overall CS (\%)} \\
+\midrule
+\textbf{SRS \#1}  & 75.00 & 44.44 & 66.66 & 60.87 \\
+\textbf{SRS \#2}  & 75.00 & 43.00 & 60.00 & 53.04 \\
+\textbf{SRS \#3}  & 75.00 & 80.00 & 100.00& 83.33 \\
+\textbf{SRS \#4}  & 100.00& 67.00 & 59.00 & 71.42 \\
+\textbf{SRS \#5}  & 80.00 & 66.66 & 75.00 & 73.33 \\
+\textbf{SRS \#6}  & 83.33 & 60.00 & 75.00 & 72.77 \\
+\textbf{SRS \#7}  & 75.00 & 50.00 & 66.66 & 63.88 \\
+\textbf{SRS \#8}  & 100.00& 71.42 & 80.00 & 83.80 \\
+\textbf{SRS \#9}  & 80.00 & 62.50 & 60.00 & 67.50 \\
+\textbf{SRS \#10} & 75.00 & 44.44 & 75.00 & 64.81 \\
+\textbf{SRS \#11} & 85.71 & 66.66 & 80.00 & 77.45 \\
+\textbf{SRS \#12} & 66.66 & 55.55 & 50.00 & 57.40 \\
+\textbf{SRS \#13} & 100.00& 80.00 & 100.00& 93.33 \\
+\textbf{SRS \#14} & 75.00 & 42.85 & 60.00 & 59.28 \\
+\textbf{SRS \#15} & 80.00 & 66.66 & 75.00 & 73.88 \\
+\textbf{SRS \#16} & 71.42 & 50.00 & 66.66 & 62.69 \\
+\textbf{SRS \#17} & 83.33 & 60.00 & 80.00 & 74.44 \\
+\textbf{SRS \#18} & 75.00 & 44.44 & 60.00 & 59.81 \\
+\textbf{SRS \#19} & 100.00& 75.00 & 75.00 & 83.33 \\
+\textbf{SRS \#20} & 85.71 & 62.50 & 80.00 & 76.07 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Analysis of Stochastic Mitigation [RQ5]:}
+The data detailed in Table~\ref{tab:consistency_results} provides a descriptive view of run-to-run variability for the recorded Gemini 2.5 Flash configuration. The repeated-run analysis is exploratory and model-specific: three runs per SRS provide a limited descriptive view of variability; they are insufficient to characterize the full output distribution or to generalize across model families, model updates, temperatures, or providers. The three-stage multi-iteration analysis across the dataset yielded an average overall Consistency Score of \textbf{70.6\%} (SD = 10.5\%; 95\% CI [65.7\%, 75.5\%]). 
+
+Crucially, the analysis reveals layer-specific stability characteristics. The \textbf{Model layer (CS-M)} frequently achieves perfect or near-perfect consistency (e.g., $100\%$ in SRS \#4, \#8, \#13, and \#19), demonstrating that the extraction of core domain entities is highly consistent. While the View and Controller layers exhibit comparatively higher variance, reflecting the LLM's flexibility in naming conventions and abstracting complex workflows, this variance remains tightly constrained within the established architectural perimeters. Ultimately, these findings suggest that, under the conditions tested in this study, the \textit{MVC Test Orchestrator} helps reduce run-to-run architectural variance within established project boundaries, indicating that rule-based constraints can contribute to more reproducible outputs in LLM-assisted development.

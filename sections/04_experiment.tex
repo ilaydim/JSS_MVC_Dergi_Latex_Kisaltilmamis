@@ -1,0 +1,266 @@
+\section{Experiments}
+\label{sec:experiment}
+
+Following the detailed exposition of the \textit{MVC Test Orchestrator}'s multi-agent architecture, RAG-driven knowledge extraction, and structured control mechanisms in Section~\ref{sec:methodology}, this section presents an experimental evaluation of the system's performance across 20 distinct SRS documents.
+
+\subsection{Research Questions and Experiment Design}
+
+The evaluation is structured around five core Research Questions (RQs) that collectively assess the framework's architectural extraction score, layered compliance enforcement, autonomous remediation effectiveness, human-AI agreement, and stochastic output consistency:
+
+\begin{itemize}
+    \item \textbf{RQ1 (Architectural Extraction Score):} To what extent can the system accurately isolate Model, View, and Controller components from unstructured, raw SRS documents?
+    \item \textbf{RQ2 (Layered Compliance):} To what degree does the proposed multi-agent architecture preserve the separation of concerns and enforce isolation between MVC layers?
+    \item \textbf{RQ3 (Remediation Effectiveness):} How effective is the Constrained Remediation Phase in rectifying identified architectural violations while maintaining fidelity to the original requirements?
+    \item \textbf{RQ4 (Human-AI Agreement):} To what extent are the autonomously generated architectural designs deemed accurate, sufficient, and industrially viable by expert software engineers?
+    \item \textbf{RQ5 (Consistency and Reliability):} What is the system's stochastic variance and output consistency when subjected to identical inputs across multiple iterations?
+\end{itemize}
+
+The experiments were conducted on a corpus of 20 distinct SRS documents. These documents constitute a purposive, criterion-based sample drawn from high-performing senior-level software engineering capstone projects at one institution, all of which were evaluated by an academic committee and received scores of 90/100 or higher. The 90/100 threshold was applied to reduce noise from severely incomplete specifications, not to construct a representative sample of industrial SRS practice. While a corpus of this size is appropriate for an expert-validated qualitative evaluation, it remains modest for drawing strong statistical generalizations about system performance. This selection substantially expands upon the five initial cases presented in our preliminary work \citep{dim2026mvc}. The descriptive metadata for these SRS documents is provided
+in Table~\ref{tab:srs_dataset}.
+
+For each experimental scenario, the system executed the complete operational workflow: requirement synthesis
+(Phase I), architectural design inference (Phase II), rule-based scaffolding (Phase III), and code generation coupled
+with AST-based verification (Phase IV). To quantify the system’s ability to constrain stochastic LLM variance
+(RQ5), the architectural derivation phase was repeated three times for each SRS using identical model parameters
+(temperature, top-p) and prompts. A Consistency Score was subsequently calculated by comparing the component name sets produced across the three independent runs using a set-intersection-based consistency metric (Eq.~\ref{eq:cs}).
+To objectively evaluate the human-AI agreement and populate the Architectural Component Extraction Score (ACES), a validation protocol was implemented in which expert software engineers evaluated the autonomously generated MVC components using a structured, multi-dimensional Evaluation Rubric. The HITL checkpoints were available at each phase boundary but were not exercised during these experiments; the pipeline was executed in fully automated mode to isolate the system's autonomous capabilities. Accordingly, this study does not estimate the effect of human intervention on output quality, time, or acceptance.
+
+% --- DATASET TABLE ---
+\begin{table}[pos=h]
+\centering
+\caption{Descriptive metadata of the 20 Software Requirements Specification (SRS) documents used in the experiments.}
+\label{tab:srs_dataset}
+\begin{tabular}{llcccc}
+\toprule
+\textbf{SRS ID} & \textbf{SRS Title} & \textbf{Pages} & \textbf{Characters} & \textbf{Tokens} & \textbf{Requirements} \\
+\midrule
+SRS \#1  & Online Rent a Car                             & 26 & 33384 & 6518  & 62 \\
+SRS \#2  & Human Resources Management System             & 47 & 73860 & 14724 & 71 \\
+SRS \#3  & Online Tourist Guide                          & 24 & 26162 & 4776  & 24 \\
+SRS \#4  & Crime and Criminal Intelligence System        & 21 & 29348 & 5562  & 40 \\
+SRS \#5  & Pet Hotel Reservation System                  & 33 & 45631 & 8830  & 39 \\
+SRS \#6  & Online Cargo Tracking System                  & 20 & 23195 & 3990  & 42 \\
+SRS \#7  & Social Network System                         & 23 & 37681 & 8166  & 38 \\
+SRS \#8  & Online Diet Consultancy                       & 23 & 35783 & 6631  & 39 \\
+SRS \#9  & Temperature Control System                    & 30 & 47123 & 9052  & 40 \\
+SRS \#10 & Hospital Management System                    & 37 & 35521 & 6898  & 40 \\
+SRS \#11 & Online Airline Reservation System             & 25 & 37423 & 7548  & 40 \\
+SRS \#12 & Online Legal Advisor System                   & 14 & 21904 & 4017  & 27 \\
+SRS \#13 & Restaurant Reservation                        & 25 & 39559 & 7481  & 35 \\
+SRS \#14 & Chat Application                              & 35 & 40113 & 7880  & 31 \\
+SRS \#15 & Fingerprint Voting System                     & 25 & 31282 & 6135  & 23 \\
+SRS \#16 & Pharmacy Management System                    & 23 & 31869 & 6100  & 31 \\
+SRS \#17 & Smart Home Management System                  & 22 & 37579 & 7679  & 27 \\
+SRS \#18 & Railway Tracking and Arrival Time Prediction  & 24 & 22285 & 4802  & 23 \\
+SRS \#19 & Hotel Management System                       & 31 & 44754 & 8435  & 40 \\
+SRS \#20 & Online Shopping Site                          & 39 & 50553 & 10150 & 31 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Implementation Environment}
+
+All experiments were conducted using \textit{Gemini 2.5 Flash},
+accessed via the Google Generative AI API~\citep{gemini2025}, as the underlying
+large language model. The multi-agent orchestration pipeline was 
+implemented in Python, utilizing the Google Generative AI 
+SDK~\citep{googlegenai2025} for LLM interactions, Python's 
+built-in \texttt{ast} module for AST-based static analysis, and 
+the \texttt{bert\_score} library~\citep{zhang2019bertscore} for 
+semantic consistency evaluation. All agents operated on identical 
+prompts and model hyperparameters across experimental runs to 
+support reproducibility. Given identical SRS input, model 
+parameters, and prompts, the pipeline is expected to produce 
+consistent \texttt{requirements\_analysis.json} and 
+\texttt{architecture\_map.json} artifacts, as quantified by the 
+Consistency Score metric (Eq.~\ref{eq:cs}). The 
+rule-based scaffolding and AST-based auditing phases do not involve
+LLM inference and are expected to produce consistent outputs across
+repeated runs.
+The source code of the \textit{MVC Test Orchestrator} pipeline
+is publicly available~\citep{mvctestorchestrator2026}.
+
+Table~\ref{tab:reproducibility} consolidates the configuration parameters required to reproduce the reported experiments.
+
+\begin{table}[htbp]
+\centering
+\caption{Reproducibility configuration. Pipeline parameters are sourced directly from \texttt{core/config.py} in the public repository~\citep{mvctestorchestrator2026}; BERTScore evaluation parameters are reported below for methodological transparency.}
+\label{tab:reproducibility}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{@{} l >{\raggedright\arraybackslash}X @{}}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+LLM model identifier     & \texttt{gemini-2.5-flash} \\
+Embedding model          & \texttt{distiluse-base-multilingual-cased-v1} \\
+Chunk size               & 1{,}000 characters \\
+Chunk overlap            & 100 characters \\
+Retrieval top-\textit{k} & 5 \\
+Vector store collection  & \texttt{srs\_collection} (user-provided) \\
+BERTScore model          & \texttt{roberta-large} (\texttt{lang=`en'}) \\
+BERTScore settings       & \texttt{rescale\_with\_baseline=False}, \texttt{idf=False} \\
+BERTScore component reported & F1 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Evaluation Metrics and Validation Protocol}
+
+The metrics used to evaluate the system's effectiveness go beyond traditional code generation accuracy; they are specifically engineered to quantify the quality of data transformation at every critical juncture, from raw requirements to the executable codebase. The evaluation process employs the following metrics, each grounded in the system's input-output pipeline. The numerical results yielded by each metric across all 20 SRS documents are consolidated in Table~\ref{tab:end_to_end_performance} (Section~\ref{sec:results}); the subsections below formally define each metric, state its directional interpretation with respect to the corresponding RQ, and link it to the relevant pipeline artifact (Table~\ref{tab:artifact_flow}). A consolidated metric-to-RQ interpretation is also provided in Table~\ref{tab:metric_rq_mapping} at the end of this section.
+
+As detailed in Table~\ref{tab:artifact_flow} (Section~\ref{sec:methodology}), each pipeline phase produces a structured artifact that coordinates agent communication. The metric definitions below refer to that table rather than restating individual file names inline.
+
+\subsubsection{Semantic Consistency and Extraction Score (RQ1 \& RQ4)}
+
+To objectively measure the system's ability to isolate architectural components from unstructured text, two complementary metrics are employed: BERTScore for semantic analysis and ACES for expert validation.
+
+\textbf{Semantic Consistency of Requirements (BERTScore):} As described in Phase I (Fig.~\ref{fig:32}), the SRS Grounding stage produces the Requirements Analysis Artifact (Table~\ref{tab:artifact_flow}), which encapsulates the functional requirements autonomously extracted by the LLM. This metric quantifies the semantic overlap between that artifact and the original functional specifications within the raw SRS document. Deviating from traditional, inflexible ``exact-match'' or n-gram methodologies, this evaluation prioritizes semantic fidelity using BERTScore~\citep{zhang2019bertscore} (configuration reported in Table~\ref{tab:reproducibility}). Each extracted requirement (domain entity or system function) in the Requirements Analysis Artifact was treated as an individual candidate string and compared against the SRS document's paragraphs (segmented on blank lines, with fragments under five words excluded) as reference strings; for each candidate, the maximum-scoring reference paragraph was retained, and the per-SRS BERTScore was obtained by averaging across all extracted requirements for that document. BERTScore does not establish requirement completeness or the absence of hallucinated components; these constructs would require requirement-level gold annotations.
+
+\textbf{Architectural Component Extraction Score (ACES):} As described in Phase II (Fig.~\ref{fig:33}), the Architect Agents produce the Architectural Map Artifact (Table~\ref{tab:artifact_flow}), which is subjected to rigorous peer review by a panel of five expert software engineers. Relying on the original SRS documents as the baseline truth, the experts evaluate the autonomously extracted components. To ensure objective and standardized scoring, evaluations are conducted using a structured 0-5 Likert-scale rubric, detailed in Table~\ref{tab:evaluation_rubric}.
+
+% --- MASTER RUBRIC TABLE ---
+\begin{table}[pos=h]
+\centering
+\caption{The structured evaluation rubric used by expert software engineers to assess Model, Controller, and View Extraction Score.}
+\label{tab:evaluation_rubric}
+\renewcommand{\arraystretch}{1.3} 
+\begin{tabularx}{\textwidth}{@{} l >{\raggedright\arraybackslash}X c @{}}
+\toprule
+\textbf{Metric / Criterion} & \textbf{Description} & \textbf{Scale} \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{Model Extraction Score (MES):} Ability to isolate data structures and domain entities.} \\
+\midrule
+Entity Extraction & Identification of all core actors and objects (e.g., User, Order) from the SRS. & 0-5 \\
+Attribute Accuracy & Alignment of model fields and data types with the documented requirements. & 0-5 \\
+Relationship Logic & Logical establishment of relational dependencies (1-N, N-M) between models. & 0-5 \\
+Naming Consistency & Adherence of nomenclature to SRS terminology and technical standards (e.g., PEP 8). & 0-5 \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{Controller Extraction Score (CES):} Ability to manage business logic and coordination.} \\
+\midrule
+Action Definition & Accurate translation of SRS workflows into specific controller actions (e.g., Create, List). & 0-5 \\
+M-V-C Linkage & Correct orchestration between Model data utilization and View redirection. & 0-5 \\
+Separation of Concerns & Clear isolation of business logic within the Controller, preventing layer leakage. & 0-5 \\
+Functional Completeness & Exhaustive representation of core business workflows (critical paths) as actions. & 0-5 \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{View Extraction Score (VES):} Ability to abstract user touchpoints and presentation logic.} \\
+\midrule
+Screen Coverage & Comprehensive definition of all primary interfaces mentioned in the SRS (e.g., Dashboard). & 0-5 \\
+User Journey Alignment & Congruence of the screen hierarchy with the documented user stories/steps. & 0-5 \\
+Abstraction Level & Appropriate functional abstraction without being burdened by unnecessary visual details. & 0-5 \\
+Hallucination Control & Adherence to the Zero-Inference policy; no fabricated screens or components. & 0-5 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Mathematical Formulation of Extraction Scores:} Rather than calculating disjointed averages, the final component score ($Score_{final}$) for each MVC layer---Model Extraction Score (MES), Controller Extraction Score (CES), and View Extraction Score (VES), as defined in Table~\ref{tab:evaluation_rubric}---is formally derived using a two-step aggregation. First, the mean score for a specific layer is calculated for each expert ($E_j$) based on the four underlying criteria ($C_i$). Subsequently, the overall score is determined by averaging the scores across all five experts ($N=5$), as formalized in Equation~\ref{eq:accuracy_score}:
+
+\begin{equation} \label{eq:accuracy_score}
+Score_{final} = \frac{1}{4N} \sum_{j=1}^{N} \sum_{i=1}^{4} C_{i,j}
+\end{equation}
+
+Where $C_{i,j} \in [0, 5]$ represents the score assigned to the $i$-th criterion by the $j$-th expert. For readability alongside the study's other percentage-based metrics, $Score_{final}$ is additionally reported on a 0--100 scale as $(Score_{final}/5) \times 100$; this rescaled value, rather than a proportion of successful outcomes, is what is reported as ``ACES'' throughout this paper (e.g., 74.0\% corresponds to $Score_{final} = 3.70$). A high $Score_{final}$ (approaching 5) indicates that the system accurately extracts the corresponding MVC components from the SRS, providing a positive answer to \textbf{RQ1}. Conversely, a low score reveals systematic extraction failures in that layer. \textbf{RQ4} is addressed separately, through the inter-rater reliability of the five experts' scores rather than the score magnitude itself (Section~\ref{sec:discussion_rq4}): high agreement among experts supports the reliability of the ACES scores as a valid measure of industrial viability, whereas low agreement would undermine confidence in that interpretation. The aggregate BERTScore and ACES values across all 20 SRS documents are reported in the first two rows of Table~\ref{tab:end_to_end_performance}.
+
+\subsubsection{Enforcement of Layered Compliance (RQ2)}
+
+To determine if the multi-agent architecture preserves the separation of concerns (RQ2), the system's structural integrity is measured through scaffolding precision and static violation detection.
+
+\textbf{Scaffolder Error Rate (SER):} As described in Phase III (Fig.~\ref{fig:34}), the Scaffolder consumes the Architectural Map Artifact (Table~\ref{tab:artifact_flow}) and translates it into a concrete physical directory structure. SER functions as a scaffold transformation integrity check rather than evidence of generative accuracy: it verifies that the rule-based translation produced no missing, misnamed, or misplaced artifacts relative to the declared architectural input. It does not establish end-to-end functional correctness or reduced upstream LLM variability.
+
+\begin{equation} \label{eq:ser}
+SER = \left( \frac{\text{Number of Structural Errors}}{\text{Total Generated Files}} \right) \times 100
+\end{equation}
+
+\textbf{Violation Detection Recall and Precision (VDR / ACP):} As described in Phase IV (Fig.~\ref{fig:35}), the AST-based static analyzer audits the generated source code for compliance with MVC principles. The analyzer is specifically calibrated to detect:
+\begin{enumerate}
+    \item \textbf{Layer Leakage:} A syntax-directed check that detects View-layer files directly instantiating or invoking methods on Model-layer objects without routing through the Controller.
+    \item \textbf{Illegal Cross-Layer Imports:} An AST-based check (ast.Import / ast.ImportFrom nodes) that detects prohibited import statements between MVC layers, for example, a View file importing a Model module.
+    \item \textbf{Business Logic Displacement:} A pattern-based check that flags direct Model-object instantiation or data-access method calls (e.g., persistence or query operations) within View-layer files, patterns syntactically equivalent to bypassing the Controller for data retrieval or persistence.
+    \item \textbf{Undefined Action Calls:} A pattern-based check that compares function call references in the generated codebase against the action names declared in the Architectural Map, flagging calls to undeclared actions.
+\end{enumerate}
+Dynamic imports, reflection, runtime monkey patching, and framework-generated dependencies are outside the supported scope of these checks.
+
+To establish ground truth for violation detection, a controlled fault-injection protocol was used: for each SRS document, a known number of MVC-isolation violations spanning the four supported rule categories (layer leakage, illegal cross-layer imports, business logic displacement, and undefined action calls) were deliberately introduced into the generated codebase. For example, a Layer Leakage violation was injected by inserting a direct call from a View-layer file to a Model-layer class's persistence method, bypassing the Controller. The complete per-category injection counts and outcomes for all 20 SRS documents are provided in the disaggregated dataset (see Data Availability). The AST-based static analyzer was then run against this modified codebase, and its output was compared against the injected ground truth. Violation Detection Recall (VDR) quantifies the proportion of injected violations that were correctly flagged (Eq.~\ref{eq:vdr}). Alert Confirmation Precision (ACP) quantifies the proportion of all reported alerts---including any raised on unmodified, clean code regions---that corresponded to a true injected violation (Eq.~\ref{eq:acp}). The F1 score (Eq.~\ref{eq:vdf1}) summarizes the trade-off between the two.
+
+\begin{subequations}
+\begin{equation} \label{eq:vdr}
+VDR = \left( \frac{\text{Detected Injected Violations}}{\text{Total Injected Violations}} \right) \times 100
+\end{equation}
+
+\begin{equation} \label{eq:acp}
+ACP = \left( \frac{TP}{TP + FP} \right) \times 100
+\end{equation}
+
+\begin{equation} \label{eq:vdf1}
+F1 = \frac{2 \times ACP \times VDR}{ACP + VDR}
+\end{equation}
+\end{subequations}
+
+The combination of SER, VDR, and ACP provides the direct empirical evidence required to answer \textbf{RQ2}. A low SER indicates that the Scaffolder faithfully preserves the MVC structure defined in the Architectural Map Artifact, indicating that the system supports layered compliance at the implementation level. Conversely, a high SER reveals structural translation failures. Similarly, a high VDR indicates that the AST-based static analyzer accurately identifies MVC violations, supporting separation of concerns detection; a low VDR would suggest that violations go undetected, undermining architectural integrity. A high ACP indicates that reported alerts are trustworthy and rarely raised on clean code. The SER, VDR, and ACP results across all 20 SRS documents are reported in rows 3--4 of Table~\ref{tab:end_to_end_performance} and in Table~\ref{tab:execution_results}.
+
+\subsubsection{Effectiveness of Autonomous Remediation (RQ3)}
+
+This subsubsection evaluates the Fixer Agent's capacity to autonomously resolve the architectural violations detected in Phase IV, directly addressing \textbf{RQ3}.
+
+\textbf{Repair Success among Detected Alerts (RSDA) and End-to-End Repair Success Rate (RSR\textsubscript{e2e}):} Also operating within Phase IV (Fig.~\ref{fig:35}), the Fixer Agent attempts to autonomously rectify the violations reported by the Reviewer Agent. This metric evaluates the effectiveness of that remediation process, thereby quantifying the system's autonomous self-healing capacity. A repair attempt was counted as successful when (1) the patched file was syntactically parseable by Python's \texttt{ast} module and (2) a subsequent architectural re-audit no longer reported the targeted rule violation. Functional equivalence, test-suite adequacy, and the absence of behavioral regressions were not evaluated; the reported repair rate is therefore an architectural re-audit success rate rather than a functional program-repair rate.
+
+\begin{subequations}
+\begin{equation} \label{eq:rsda}
+RSDA = \left( \frac{\text{Successfully Repaired Violations}}{\text{Detected \& Repair-Attempted Violations}} \right) \times 100
+\end{equation}
+
+\begin{equation} \label{eq:rsr_e2e}
+RSR_{e2e} = \left( \frac{\text{Successfully Repaired Violations}}{\text{Total Injected Violations}} \right) \times 100
+\end{equation}
+\end{subequations}
+
+RSDA (Eq.~\ref{eq:rsda}) characterizes repair effectiveness conditional on detection, whereas RSR\textsubscript{e2e} (Eq.~\ref{eq:rsr_e2e}) reports end-to-end repair success against the full set of injected ground-truth violations, including any that were missed at the detection stage. A high RSDA indicates that the Constrained Remediation Phase successfully heals detected architectural violations while preserving the fidelity of the original design, providing a positive answer to \textbf{RQ3}. Conversely, a low RSDA or RSR\textsubscript{e2e} reveals that the Fixer Agent fails to autonomously resolve violations---either due to insufficient architectural constraint guidance or upstream misses at the detection stage---exposing a critical limitation in the system's self-healing capacity. The aggregate RSDA and RSR\textsubscript{e2e} across all 20 SRS documents are reported in row 5 of Table~\ref{tab:end_to_end_performance} and in Table~\ref{tab:execution_results}.
+
+\subsubsection{System Stability and Output Consistency (RQ5)}
+
+To evaluate output stability across multiple runs, this subsubsection introduces a metric that quantifies the system's run-to-run variance when processing identical inputs, addressing \textbf{RQ5}.
+
+\textbf{Consistency Score (CS):} To evaluate stochastic consistency, the pipeline was executed three independent times per SRS, and the Requirements Analysis and Architectural Map Artifacts generated in Phases I and II (Fig.~\ref{fig:32}, Fig.~\ref{fig:33}) were compared across runs. This metric assesses the structural variance of these outputs across iterations utilizing identical SRS inputs, model parameters, and prompts. 
+
+In an optimal scenario, the system is expected to derive the identical foundational components across all iterations. While minor nomenclature variances are accepted as natural byproducts of an LLM's generative flexibility, the macro-architectural skeleton should remain stable. A high Consistency Score indicates that the system effectively mitigates hallucination risks and consistently produces a faithful architectural blueprint.
+
+\begin{equation} \label{eq:cs}
+CS = \frac{|S_1 \cap S_2 \cap S_3|}{|S_1 \cup S_2 \cup S_3|} \times 100
+\end{equation}
+
+where $S_1$, $S_2$, and $S_3$ denote the sets of component names produced in the three independent runs for a given SRS document and MVC layer. Component names were compared as extracted from the generated JSON artifacts.
+
+A high CS indicates that the system produces stable, reproducible architectural blueprints across identical inputs, demonstrating that its rule-based constraint mechanisms effectively counteract the inherent stochasticity of LLMs and providing a positive answer to \textbf{RQ5}. Conversely, a low CS reveals high sensitivity to LLM stochastic variance, indicating that the system's outputs are unreliable across runs and cannot serve as a dependable foundation for reproducible software generation. The aggregate CS across all 20 SRS documents is reported in the final row of Table~\ref{tab:end_to_end_performance}.
+
+\subsubsection{Metric-to-RQ Mapping Summary}
+
+Table~\ref{tab:metric_rq_mapping} consolidates the directional interpretation of all evaluation metrics in a single reference. For each metric the table specifies which RQ it directly addresses and what a high or low value implies about the system's behavior.
+
+\begin{table}[pos=h]
+\centering
+\caption{Directional interpretation of evaluation metrics with respect to each Research Question.}
+\label{tab:metric_rq_mapping}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{@{} l l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X @{}}
+\toprule
+\textbf{RQ} & \textbf{Metric} & \textbf{High Value Implies} & \textbf{Low Value Implies} \\
+\midrule
+RQ1 & BERTScore & High semantic similarity between source SRS text and generated requirements artifact & Low semantic similarity; functional constraints may be lost or distorted during Phase I synthesis \\
+\midrule
+RQ1 & ACES (MES / CES / VES) & MVC components are accurately extracted from the SRS across all three layers & Systematic extraction failures in one or more layers \\
+\midrule
+RQ4 & Inter-Rater Reliability (ICC(A,5)) & Expert raters agree closely with each other, supporting the reliability of the ACES scores as a measure of industrial viability & Low agreement among experts would undermine confidence in ACES as a valid measure of industrial viability \\
+\midrule
+RQ2 & SER$^*$ ($\downarrow$ better) & \textit{(undesirable)} Structural errors indicate that the Scaffolder fails to faithfully translate the Architectural Map & \textit{(desirable)} Zero structural errors indicate that rule-based scaffolding supports MVC compliance at the file-system level \\
+\midrule
+RQ2 & VDR / ACP & AST-based static analyzer reliably flags injected MVC violations (VDR) with few false alarms on clean code (ACP), on the fault-injection benchmark, indicating support for separation of concerns & Injected violations go undetected (low VDR) or clean code triggers excessive false alarms (low ACP), undermining the architectural integrity of the generated codebase \\
+\midrule
+RQ3 & RSDA / RSR\textsubscript{e2e} & Fixer Agent autonomously heals detected violations (RSDA) and the majority of all injected violations end-to-end (RSR\textsubscript{e2e}), indicating effective architectural self-healing & System cannot autonomously remediate violations; architectural drift persists after the repair cycle \\
+\midrule
+RQ5 & CS & Outputs are stable and reproducible across identical runs; rule-based constraints successfully suppress LLM stochasticity & High run-to-run variance; system cannot serve as a reliable foundation for reproducible software generation \\
+\bottomrule
+\multicolumn{4}{@{}l}{\small $^*$\textit{SER is an error rate: a value of 0\% is optimal; see also the note in Table~\ref{tab:end_to_end_performance}.}} \\
+\end{tabularx}
+\end{table}
+
+\subsubsection{Descriptive Analysis Procedure}
+Each SRS document was treated as the analysis unit. For each metric, we report the macro-average across 20 SRS documents, sample standard deviation, median, range, and a two-sided 95\% \textit{t} confidence interval for the mean, computed as $\bar{x} \pm t_{0.975,19} \times SD / \sqrt{20}$ ($t_{0.975,19} = 2.093$). These intervals characterize between-document variation in this purposive corpus and should not be interpreted as population-generalization intervals. The descriptive summary is reported in Table~\ref{tab:descriptive_stats} (Section~\ref{sec:results}).

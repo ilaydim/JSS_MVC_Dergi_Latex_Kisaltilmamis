@@ -1,0 +1,33 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+This study presents the \textit{MVC Test Orchestrator}, a framework
+designed to detect selected MVC conformance violations in newly generated Python artifacts
+within LLM-assisted software development pipelines. By distributing functional responsibilities across specialized LLM-based agents and rule-based software modules, each operating within clearly bounded task domains, the current system aims to enable structured control over complex architectural design tasks.
+
+The empirical effectiveness of the system was validated through 
+experiments conducted across a dataset of 20 distinct Software 
+Requirements Specifications (SRS). The experimental outcomes demonstrate
+that the system achieved a macro-average BERTScore of 0.808 and an average extraction score (ACES) of \textbf{74.0\%}
+across Model, View, and Controller components, alongside an architectural
+violation-detection recall (VDR) of \textbf{98.8\%} (96.2\% precision, ACP) and an
+autonomous remediation success rate (RSDA) of \textbf{92.6\%} among detected
+violations (91.6\% end-to-end, RSR\textsubscript{e2e}). The five-expert evaluation panel exhibited excellent
+inter-rater agreement (ICC(A,5)\,$=$\,0.942), supporting the reliability of the reported ACES scores, and
+the multi-iteration analysis yielded a macro-average Consistency Score (CS) of 70.6\% across three
+independent extraction runs. As expected for a deterministic,
+rule-based transformation, the $0\%$ Scaffolder
+Error Rate (SER) documented during the \texttt{/scaffold} phase confirms
+that the rule-based scaffolding stage faithfully translated the
+Architectural Map into the file-system structure across all 20 SRS
+documents, consistent with its intended role as a rule-based, non-LLM
+safety perimeter (Section~\ref{sec:phase3}).
+
+A key contribution of the \textit{MVC Test Orchestrator} lies in its synthesis of
+Retrieval-Augmented Generation (RAG) paradigms with rule-based Abstract
+Syntax Tree (AST) analysis. This integration establishes an end-to-end
+traceability chain spanning from natural language
+requirements to the executable codebase. The pipeline preserves developer oversight through a Human-in-the-Loop (HITL) integration at key decision points. Collectively, these results support the feasibility of the tested pipeline for selected MVC conformance tasks within newly generated Python artifacts, but do not establish superiority, longitudinal prevention of architecture erosion, functional correctness, or generalization beyond the studied model, corpus, and Python rule set. The 
+limitations of this study, including dataset scope and model-specific 
+constraints, are discussed in Section~\ref{sec:limitations}; directions 
+for future work are outlined in Section~\ref{sec:future}.

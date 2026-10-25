@@ -1,0 +1,135 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Software engineering is a naturally complicated discipline, traditionally
+ruled by a sequential, interconnected series of practices that include
+requirements analysis, design, implementation, and testing. The Model-View-Controller (MVC) architecture, first introduced 
+by Reenskaug~\citep{Reenskaug1979} and later formalized as a 
+design pattern~\citep{Gamma1994}, remains one of the most 
+widely adopted structural paradigms in software development.
+By enforcing a clear separation of concerns across data management, user
+interface, and control logic, MVC provides a principled foundation for
+building maintainable, testable, and scalable systems. Even in the era
+of AI-assisted development, this separation remains relevant; as code
+generation accelerates, preserving architectural discipline becomes
+increasingly critical.
+
+However, the rapid integration of Large Language Models (LLMs) into the
+development toolchain has been reported to erode this
+discipline~\citep{Slater2025, Waseem2025, Ehsani2026}. AI-powered coding assistants
+such as Cursor~\citep{Cursor2025}, GitHub Copilot~\citep{GitHubCopilot2025}, 
+and OpenAI Codex~\citep{OpenAICodex2025} have significantly
+accelerated implementation tasks~\citep{Hou2024}. However, this
+speed may come at the expense of macro-level architectural
+integrity, the structural coherence that governs inter-layer boundaries
+and system-wide design consistency~\citep{Whiting2020}. The speed at which LLMs translate
+complex business logic into functional code, while effective in isolated
+benchmarks, deserves careful evaluation when applied to real-world,
+architecture-sensitive projects.
+
+This pattern is increasingly described as ``vibe
+coding''~\citep{Fawzy2025}, an approach where developers rely heavily
+on LLM outputs, generating code based on momentary decisions
+rather than adhering to a defined architecture. The underlying danger is
+that the generated code may function correctly in isolation, a function
+may yield the correct output, a class may behave as expected, yet when
+these components are integrated, the resulting structure often
+contradicts the project's architectural principles and silently violates
+inter-layer boundaries. LLM-generated code has been found to contain
+structural and quality problems, such as poor exception handling,
+undefined variables, and weak adherence to design rules, that can lead
+to architectural drift in layered systems when combined without careful
+review~\citep{Siddiq2024, Fawzy2025, Slater2025}. When developers
+commit such violations to the codebase without adequate review,
+technical debt accumulates without control.
+
+Over time, this accumulation shows itself as Architecture
+Erosion~\citep{Li2022}, defined as the progressive accumulation of
+deviations between the intended architecture and the implemented
+codebase. Architecture erosion goes beyond structural degradation: it restricts system
+scalability and complicates the integration of new
+requirements~\citep{Li2022}. Although various enforcement and
+remediation approaches have been proposed to detect and address
+architecture erosion~\citep{Li2022}, it remains a major unresolved
+challenge in software engineering. As this accumulation stems from
+architecturally non-compliant code introduced during development~\citep{Li2022},
+we reason that mitigating it in AI-assisted workflows requires enforcement
+mechanisms acting at the point of code generation, before such violations
+can accumulate into long-term drift. Addressing this upstream,
+point-of-generation problem, rather than measuring erosion's longitudinal
+accumulation, is therefore the specific focus of the present study.
+
+Existing tools have failed to mitigate this problem fully. Traditional
+static analysis tools, such as SonarQube~\citep{SonarQube} and
+Checkstyle~\citep{Checkstyle}, excel at detecting low-level syntactic
+and stylistic anomalies; however, they largely overlook high-level
+architectural deviations~\citep{Fontana2017}, such as inter-layer
+responsibility leaks or MVC isolation violations. Furthermore, most current
+architectural compliance tools require substantial manual preprocessing
+to map the system to its intended architecture. This well-documented
+barrier often leads practitioners to rely on informal, error-prone
+inspection methods~\citep{Ali2018}. Another critical gap is the absence
+of a structured, end-to-end traceability chain between Software
+Requirements Specifications (SRS) and the generated code. While
+existing traceability methods predominantly rely on Information
+Retrieval (IR) techniques, they continue to exhibit significant
+limitations in terms of full automation and seamless integration into
+modern development workflows~\citep{Koboyatshwene2025}.
+
+We propose the \textit{MVC Test Orchestrator} to address this gap, a
+multi-agent system designed to preserve and enforce MVC architectural
+integrity across the AI-assisted development workflow and built on an
+``Architecture-First'' philosophy, wherein all design and code
+generation decisions are anchored to and constrained by the SRS before
+any implementation step begins. Concretely, the framework: (i)~extracts
+MVC components from unstructured SRS text via RAG-grounded multi-agent
+orchestration (\texttt{/extract}); (ii)~generates rule-based project
+scaffolds that enforce MVC layer boundaries at the file-system level
+(\texttt{/scaffold}); (iii)~detects inter-layer architectural violations
+through AST-based static analysis (\texttt{/audit}); and
+(iv)~autonomously remediates identified violations within the boundaries
+of the established Architectural Map (\texttt{/fix}). The system
+establishes the SRS document as the single source of truth, governing
+this entire workflow from requirements analysis through autonomous
+remediation. Rather than functioning as a fully autonomous black box,
+the system employs a Human-in-the-Loop (HITL) architecture that
+preserves developer oversight and strategic authority at every stage,
+acknowledging that LLM-based agents can approximate but not fully
+guarantee rule-bound behavior. Underlying these mechanisms is what we
+term a Safety-Layered Architecture: rule-based components (scaffolding,
+AST-based auditing) are interleaved with the LLM's generative steps,
+aiming to bound their stochastic variability within verifiable
+architectural constraints.
+
+\smallskip\noindent\textbf{Scope.} The prototype is intended to support MVC structural conformance in newly generated Python artifacts. The study does not observe the longitudinal evolution of a production codebase and therefore does not directly measure architecture erosion, architectural drift over time, or technical-debt accumulation.
+
+This paper makes three contributions. First, we present a multi-agent
+architecture that automates the complete MVC lifecycle, from SRS
+ingestion to self-healing remediation. This architecture combines
+RAG-based semantic grounding with rule-based scaffolding and AST-driven
+auditing under a HITL oversight protocol. Second, we introduce an
+eight-metric evaluation framework spanning both LLM-based generative
+stages and rule-based pipeline stages. These metrics include Semantic
+Consistency (BERTScore), Architectural Component Extraction Score
+(ACES), Scaffolder Error Rate (SER), Violation Detection Recall and
+Alert Confirmation Precision (VDR/ACP), Repair Success among Detected
+Alerts and end-to-end Repair Success Rate (RSDA/RSR\textsubscript{e2e}), and
+Consistency Score (CS). Third, we report empirical results across 20
+SRS documents of varying domain and complexity. The system achieves an
+extraction score of 74.0\%, a violation detection recall of 98.8\%
+(96.2\% precision), a remediation success rate of 92.6\% among detected
+violations, a 0\% scaffolding error rate across all evaluated
+documents, and a 70.6\% consistency score across three independent
+iterations per document.
+
+The remainder of this paper is organized as follows: Section~\ref{sec:related_work} reviews
+the relevant literature, Section~\ref{sec:methodology} describes the proposed methodology
+and system architecture, Section~\ref{sec:experiment} presents the experimental
+design---including the five Research Questions (RQ1--RQ5) that
+structure the evaluation---and the evaluation metrics, Section~\ref{sec:results}
+reports the experimental results, Section~\ref{sec:discussion} discusses the findings,
+Section~\ref{sec:limitations} addresses the limitations and threats to validity, Section~\ref{sec:conclusion}
+concludes the study, and Section~\ref{sec:future} outlines potential directions for
+future research.
+
+\smallskip\noindent\textbf{Extension beyond the preliminary conference paper.} This journal article substantially extends the five-case preliminary study reported by \cite{dim2026mvc}. The evaluation corpus is expanded from 5 to 20 SRS documents, and the architecture is redesigned around three specialized Architect Agents instead of one. This study also adds an autonomous remediation stage that was not present in the conference version, and replaces the earlier AI-as-a-Judge evaluation with a five-expert human panel supported by an Inter-Rater Reliability analysis. The evaluation framework itself grows from five simple metrics to eight, organized around five research questions (RQ1--RQ5) not present in the earlier work. The conference paper is cited wherever the original extraction and scaffolding concepts are described; reused material is limited to the underlying problem framing, the core RAG mechanism, and the public code repository.

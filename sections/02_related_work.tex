@@ -1,0 +1,329 @@
+\section{Related Work}
+\label{sec:related_work}
+
+This section reviews five interconnected areas that motivate the
+design of the MVC Test Orchestrator. It first examines traditional
+approaches to architectural enforcement and static analysis,
+highlighting their structural limitations. It then surveys the
+evolution of LLM-based code generation and its implications for
+architectural integrity. Next, it reviews requirement-to-architecture
+traceability frameworks and their limitations in supporting automated,
+end-to-end compliance. It also assesses automated program repair and
+code remediation, and finally discusses Human-AI collaboration in
+software engineering. Together, these strands reveal the specific gap
+the proposed system is designed to address.
+
+% -----------------------------------------------------------------
+\subsection{Traditional Architectural Enforcement and Static Analysis}
+\label{sec:related_static}
+% -----------------------------------------------------------------
+
+Software architecture serves as a foundational building block for
+satisfying a system's quality attributes and enforcing its structural
+constraints. As software systems and their component modules evolve,
+the separation between the intended architectural design and the
+implemented codebase becomes an ongoing challenge. Defined in the
+literature as Architecture Erosion \citep{Li2022}, this
+deviation risks the integrity of the system's modular structure.
+Beyond structural degradation, it increases system vulnerabilities
+and limits extensibility, complicating the integration of new
+requirements \citep{Li2022}. Although various monitoring and
+remediation strategies have been proposed to mitigate this decay
+\citep{deSilva2012}, the interplay of technical and non-technical
+factors keeps architecture erosion among the major unsolved problems in software
+engineering \citep{Li2022}.
+
+Historically, approaches to preserving architectural integrity have
+relied on modularization, information hiding \citep{Parnas1972}, and
+optimized coupling and cohesion \citep{Yourdon1979}.
+Scenario-based evaluation frameworks, including SAAM \citep{Kazman1994}
+and ATAM \citep{Kazman2000}, were developed to identify architectural
+risks before implementation and to verify alignment between quality
+requirements and the proposed design. However, most traditional methods
+fail to establish a consistent link between quality attributes and
+architectural artifacts, and often depend on manual or informal
+processes \citep{Dobrica2002}. In practice, failure to strictly capture
+high-level architectural artifacts---documents that represent the
+macro-level system design---often prevents these abstractions from
+guiding the implementation and reuse of low-level components
+\citep{Lung1997}.
+
+Currently, automated tools used to ensure architectural compliance,
+such as SonarQube \citep{SonarQube} and Checkstyle
+\citep{Checkstyle}, focus almost exclusively on low-level code
+anomalies, including syntactic irregularities and stylistic errors.
+Consequently, high-level structural violations affecting the system's
+organizational logic---such as invalid dependencies that violate
+architectural rules---are detected only to a limited extent \citep{Fontana2017}.
+Developers' reluctance to adopt formal architectural compliance tools
+has been attributed in the literature to the substantial effort
+required to map a system to its architecture \citep{Ali2018}. Existing commercial solutions typically
+require substantial manual preprocessing to map the codebase to the
+intended architecture---a configuration overhead that \citet{Ali2018} identify as a key adoption barrier, often resulting in
+informal, error-prone verification methods.
+
+Operating under a ``Just-In-Time'' paradigm, tools like JITTAC
+\citep{Buckley2013} represent some of the most proactive traditional
+solutions, as developers are informed about the architectural
+implications of their modifications during coding. By employing
+real-time Reflexion Modeling \citep{Murphy2001} techniques, they reduce
+architectural drift by enforcing consistency between the designed
+architecture and the executed code. Nevertheless, even with
+sophisticated tools like JITTAC, the target architectural model must
+still be manually defined by software architects, and source code
+elements must be explicitly mapped to this abstraction
+\citep{Buckley2013}.
+
+Recent studies \citep{Fuchs2025, Helmi2025} show that LLM-based
+approaches have significant potential to autonomously extract and
+isolate architectural components from Software Requirement
+Specifications (SRS), thereby addressing manual mapping bottlenecks.
+To reduce the risk of architectural drift, however, bidirectional
+traceability between documented requirements and code-level structural
+constraints should be coupled with autonomous remediation.
+
+Architecture conformance approaches differ from general code-quality analyzers such as SonarQube~\citep{SonarQube} and Checkstyle~\citep{Checkstyle}. Reflexion models~\citep{Murphy2001} and just-in-time conformance techniques~\citep{Buckley2013} compare implemented dependencies with an explicitly defined target architecture, while architecture-test and dependency-rule approaches encode admissible relations as executable constraints~\citep{Pruijt2017}. These families provide stronger architectural baselines than style-oriented analyzers, but typically require developers to specify or maintain the target model. The present prototype explores whether an SRS-derived MVC map can reduce that setup burden; it does not replace or empirically outperform established conformance tools in this study.
+
+The tools and methods reviewed in this section share a common
+limitation: they either operate at too low an abstraction level to
+capture MVC-layer violations or require substantial manual
+configuration, undermining automation. The MVC Test Orchestrator
+addresses this gap by combining SRS-grounded requirement analysis with
+automated architectural auditing, eliminating the need for manual
+model definition while maintaining developer management through a
+Human-in-the-Loop design. Unlike JITTAC and similar tools, which
+require architects to manually define the target model before analysis
+begins, the MVC Test Orchestrator derives the model automatically from
+the SRS document. Detection is also scoped to MVC-specific inter-layer
+violations rather than general code anomalies, removing the manual
+configuration step identified as a key adoption barrier by \citet{Ali2018}.
+
+% -----------------------------------------------------------------
+\subsection{Large Language Models in Software Engineering}
+\label{sec:related_llm}
+% -----------------------------------------------------------------
+
+The integration of Large Language Models (LLMs) into the software
+development lifecycle has driven a major shift in automated code
+generation and developer productivity. Despite the well-documented
+risks to logical consistency and contextual accuracy \citep{Siddiq2024},
+the speed of these models has supported their general adoption across
+the industry \citep{Hou2024}. Nevertheless, \citet{Slater2025} reports that smaller, open-weight
+LLMs exhibit a critical limitation in their ability to naturally
+understand and enforce global architectural constraints that control
+the macro-level system, whereas larger proprietary models demonstrate
+markedly higher conformance.
+
+Current research suggests that while LLMs excel at generating
+syntactically correct and functionally feasible code snippets within a
+localized context, they may systematically violate layered architectural
+rules and isolation principles at the macro level
+\citep{Slater2025, Zhu2026}. Particularly within ``vibe coding'' workflows, AI-generated
+implementations that conflict with the project's architectural
+blueprints are reported to accelerate the accumulation of
+Architecture Erosion and technical debt
+\citep{Slater2025, Waseem2025, Ehsani2026}. Developers' over-reliance on
+AI-generated outputs often allows these structural violations to enter
+the codebase without strict architectural inspection, fueling an
+uncontrolled accumulation of technical debt \citep{Huang2026}.
+
+Consequently, prompt-level engineering or simple fine-tuning alone may
+be insufficient to preserve architectural integrity
+\citep{Dente2026, Zhu2026}. This gap underscores the need for an
+``architectural orchestrator'' mechanism, one capable of constraining
+the generative output rate of LLMs by establishing a structured,
+bidirectional bridge between Software Requirement Specifications (SRS)
+and code-level structural constraints, while also including autonomous
+remediation capabilities.
+
+The MVC Test Orchestrator directly addresses this need by imposing
+architectural constraints before code generation begins, grounding each
+generation step in SRS-derived requirements rather than relying on the
+model to infer architectural rules independently. This structural
+approach to constraint enforcement, discussed further in Section~\ref{sec:experiment},
+represents a departure from existing LLM coding assistants that lack a
+formal architectural representation \citep{Cervantes2026}.
+
+% -----------------------------------------------------------------
+\subsection{Requirement-to-Architecture Traceability and RAG}
+\label{sec:related_traceability}
+% -----------------------------------------------------------------
+
+Traceability, defined as the process of establishing and maintaining
+bidirectional relationships between software requirements,
+architectural artifacts, and source code, is a critical determinant of
+product quality and effective change management \citep{Li2022}. A
+recent systematic literature review spanning 2013 to 2024 indicates
+that, while most traceability methods rely heavily on Information
+Retrieval (IR) techniques, these approaches still exhibit severe
+limitations in full automation and seamless integration with modern,
+iterative development approaches such as Agile and DevOps
+\citep{Koboyatshwene2025}. Furthermore, the scarcity of comprehensive,
+end-to-end tool support and the tendency to evaluate these methods on
+static, legacy datasets rather than dynamic industrial case studies
+continue to slow industrial adoption and limit empirical reliability.
+
+The built-in semantic gap between high-level architectural
+documentation and low-level source code constitutes a fundamental
+obstacle to establishing robust traceability links. Traditionally,
+bridging this gap required the manual construction of software
+architectural models---a highly labor-intensive, error-prone, and
+costly effort \citep{Clements2002}. However, recent advances in Large
+Language Models (LLMs) have enabled the automated extraction of
+architectural entities and their relationships directly from both
+natural-language documentation and source code. By avoiding the need
+for manual modeling, this capability effectively bridges the semantic
+gap and enables the generation of high-fidelity traceability links
+\citep{Fuchs2025}.
+
+These advances provide a solid foundation for the use of
+Retrieval-Augmented Generation (RAG) architectures in software
+engineering \citep{Hey2025}. In this context, RAG utilizes autonomously
+extracted architectural components and formal requirement
+specifications as a semantic ``grounding'' mechanism. This enables
+thorough verification of code-level architectural integrity against the
+system's dynamic documentation (SRS documents updated
+iteratively). Ultimately, this integration harmonizes the generative
+capabilities of LLMs with defined architectural constraints,
+effectively transforming traceability from a passive, backward-looking
+tracking mechanism into an active, real-time remediation process.
+
+The MVC Test Orchestrator builds directly on these advances by
+embedding RAG-based semantic retrieval as its primary grounding
+mechanism. Rather than treating traceability as a passive
+record-keeping activity, the proposed system uses SRS-derived
+requirements as a live semantic anchor against which generated code is
+continuously verified, closing the automation gap identified in current
+IR-based approaches. In this way, automated forward traceability from requirements to code---a
+gap that existing methods fail to close---is achieved through the combination
+of LLM-based extraction and structured architectural auditing
+\citep{dim2026mvc}.
+
+% -----------------------------------------------------------------
+\subsection{Automated Program Repair and Code Remediation}
+\label{sec:related_apr}
+% -----------------------------------------------------------------
+
+While traditional debugging and maintenance methodologies mainly focus
+on generating localized patches driven by specific test scenarios, the
+advent of generative AI has advanced this area toward the
+conceptualization of ``self-healing'' software systems. This
+transition forms the core of modern Automated Program Repair (APR)
+frameworks, such as RepairAgent \citep{Bouzenia2025} and ChatRepair
+\citep{Xia2024}, which are engineered to minimize maintenance overhead
+and substantially enhance system reliability. Recent empirical work by
+\citet{Khlaisamniang2023} demonstrated that
+autonomous remediation mechanisms can effectively address
+component-level failures in large-scale systems by leveraging
+generative AI for anomaly detection, code generation, and
+automated debugging. Such approaches significantly reduce the
+need for manual intervention while preserving core system
+functionality and operational efficiency.
+
+However, while the automated remediation of localized, syntax-level
+defects has become increasingly viable, resolving macro-level
+structural debt and architectural ``smells'' \citep{Fontana2017}
+remains a highly complex challenge. A recent investigation by
+\citet{Pandini2025} highlighted that LLMs exhibit considerable
+capability in formulating refactoring strategies to mitigate complex
+structural flaws, such as Cyclic Dependencies (CD). Their study
+revealed that RAG-enhanced LLM outputs were preferred by 73\% of
+participants in qualitative interviews, primarily because they offered
+improved solution structure and clearer step-by-step reasoning in the
+generated refactoring proposals.
+
+To handle the contextual complexity present in architectural
+remediation, the use of multi-agent architectures has been suggested to be
+important for preserving system integrity
+\citep{Oueslati2025, Xu2025, Batole2025}. The systematic division of
+responsibilities---for instance, designating one agent to identify the
+optimal dependency to separate, while another executes the
+corresponding code refactoring---yields more reliable outcomes when
+resolving complex dependency cycles \citep{Pandini2025}. These findings
+suggest that coordinated LLM-driven remediation holds promise for
+addressing not merely functional anomalies, but also deep structural
+deviations that violate a project's foundational architectural
+constraints; however, current benchmarks indicate this capability
+remains inconsistent, with even the best-performing agents resolving
+fewer than half of identified architectural smells and occasionally
+introducing new violations \citep{Dinu2026}.
+
+Existing APR frameworks, such as RepairAgent and ChatRepair, operate
+without a fixed architectural reference, which means a local fix can
+introduce a new structural violation elsewhere in the codebase. The
+Fixer Agent in the MVC Test Orchestrator avoids this by restricting
+all repairs to the violations flagged by the AST-based static
+analyzer; it cannot modify the rule-based project scaffold or the Architectural Map
+during patching. The practical effect of this constraint is measured
+in Section~\ref{sec:results} through the RSDA and RSR\textsubscript{e2e} metrics.
+
+% -----------------------------------------------------------------
+\subsection{Human-AI Collaboration in Software Engineering}
+\label{sec:related_hitl}
+% -----------------------------------------------------------------
+
+The deployment of AI agents within software engineering workflows is
+increasingly shifting away from fully autonomous ``black-box''
+approaches and toward Human-in-the-Loop (HITL) hybrid systems. \citet{Sera2025} emphasize that within dynamic,
+self-managing architectures, human oversight during the ``Plan''
+phase of the classical Monitor, Analyze, Plan, Execute,
+Knowledge (MAPE-K) cycle \citep{Kephart2003} is essential for safeguarding
+quality attributes and reducing unintended behavior. This
+collaborative model positions AI agents as autonomous executors of
+operational tasks while reserving strategic governance to human
+developers, ensuring the system does not unintentionally deviate from
+its intended architectural constraints.
+
+This architectural imperative is supported by current Human-in-the-Loop
+LLM-based frameworks. Existing literature demonstrates that permitting
+AI agents to execute complex planning and coding tasks without human
+validation significantly increases the risk of generating convincing
+but erroneous outputs (hallucinations) \citep{Ji2023}.
+Ultimately, the effectiveness of human-AI collaboration is dependent
+on the transparency and explainability of the AI's recommendations.
+Empirical analyses by \citet{Pandini2025} indicate that
+developers adopt AI-generated architectural refactoring suggestions
+with significantly greater confidence when the proposals are
+accompanied by explicit, step-by-step reasoning, thereby directly
+enhancing the perceived utility of the intervention.
+
+Building on this collaborative context, the authors initially
+introduced the foundational baseline of the MVC Test
+Orchestrator~\citep{dim2026mvc}. The preliminary architecture presented at the
+International Informatics and Software Engineering Conference (IISEC) constrained LLM outputs using structured, rule-based
+scaffolding, establishing the SRS document as the definitive source of
+truth. The present study extends this initial framework, as detailed in
+Section~\ref{sec:introduction}. Through these advancements, human-AI
+interaction is elevated from a passive validation checkpoint into a
+proactive, autonomous, and architecturally grounded management process.
+
+What distinguishes the current work from the HITL frameworks surveyed
+here is the role of human oversight in the process. In most HITL
+systems, humans review AI output after it is generated. In the MVC
+Test Orchestrator, the SRS, a human-authored document, defines the
+architectural boundaries before any generation begins, so developer
+intent is built into the system from the start rather than checked
+after the fact.
+
+Taken together, the literature reviewed across
+Sections~\ref{sec:related_static} through~\ref{sec:related_hitl}
+reveals a consistent and critical gap in the current state of the art.
+Traditional static analysis tools operate at too low an abstraction
+level to detect MVC-layer violations, while scenario-based evaluation
+frameworks remain heavily dependent on manual configuration. LLM-based
+code generation, despite its productivity gains, has been shown to
+systematically undermine macro-level architectural constraints in the
+absence of structured oversight. Existing traceability methods lack
+the automation and dynamic integration needed to support modern
+development workflows, and current automated repair mechanisms address
+localized defects without accounting for broader architectural
+coherence. The MVC Test Orchestrator is proposed to address this
+combination of limitations. By grounding code generation in
+SRS-derived requirements through RAG-based semantic retrieval,
+enforcing MVC architectural boundaries through AST-based static
+analysis, and embedding human oversight at each decision point through
+a HITL design, the proposed system offers an integrated response to
+challenges that existing approaches address only in isolation. Rather
+than optimizing a single dimension of the development pipeline, the
+aim is to establish a traceable, auditable, and architecturally
+coherent workflow from requirements to implementation.
